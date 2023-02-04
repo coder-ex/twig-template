@@ -1,0 +1,61 @@
+version: "3.8"
+
+services:
+  php:
+    build: ./docker/php-fpm
+    container_name: scsip-php-fpm
+    image: scsip/php-fpm
+    volumes:
+      - ${PATH_HOST}:${PATH_CONTAINER}
+      - ${PATH_SERVICE}/logs/xdebug:/var/log/xdebug
+    working_dir: ${PATH_CONTAINER}
+    environment:
+      XDEBUG_CONFIG: "client_host=192.168.223.1 start_with_request=no client_port=9008"
+      XDEBUG_SESSION: "PHPVCS"
+      PHP_IDE_CONFIG: "serverName=school-server"
+    ports:
+      - "9010:9000"
+    networks:
+      - scsip_net
+
+  nginx:
+    build:
+      context: docker/nginx
+    image: scsip/http-nginx
+    container_name: scsip-http-nginx
+    depends_on:
+      - php
+    volumes:
+      - ${PATH_HOST}:${PATH_CONTAINER}
+      - ${PATH_SERVICE}/logs/nginx:/var/log/nginx
+    ports:
+      - "192.168.223.1:80:80"
+      - "192.168.223.1:443:443"
+    networks:
+      - scsip_net
+
+  pgadmin:
+    container_name: dev-pga
+    image: dpage/pgadmin4:6.8
+#    depends_on:
+#      - phpmyadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_USER}@school.loc
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASS}
+    ports:
+      - "8080:80"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+    networks:
+      - scsip_net
+
+networks:
+  scsip_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.223.0/28 # нам много адресов не нужно

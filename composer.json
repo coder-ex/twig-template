@@ -1,0 +1,12 @@
+{
+    "name": "twig-template",
+    "type": "project",
+    "description": "Editing Twig templates",
+    "keywords": ["templates", "twig", "edit"],
+    "license": "MIT",
+    "require": {
+        "twig/twig": "^3.0"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
